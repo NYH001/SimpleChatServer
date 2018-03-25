@@ -4,7 +4,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -50,6 +52,17 @@ public class SocketServer {
         }
     }
 
+    public void sendToClient(String[] messages){
+        Iterator iterator = alClients.iterator();
+        while (iterator.hasNext()){
+            PrintWriter pwServer = (PrintWriter)iterator.next();
+            for(int i = 0;i<messages.length; i++){
+                pwServer.println(messages[i]);
+                pwServer.flush();
+            }
+        }
+    }
+
     public class ServerReceiver implements Runnable{
         BufferedReader brReader;
         Socket skReader;
@@ -67,10 +80,16 @@ public class SocketServer {
         @Override
         public void run() {
             String message;
+            int lines = 1;
             try {
                 while (null != (message = brReader.readLine())){
+                    System.out.print(lines + "   ");
                     System.out.print(message);
-                    sendToClient(message);
+                    String[] messages = message.split("////");
+                    SimpleDateFormat sdfCurrentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    messages[0] = messages[0] + "  " + sdfCurrentTime.format(new Date());
+                    sendToClient(messages);
+                    lines ++;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
